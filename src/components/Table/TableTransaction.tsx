@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from "../../hook/redux_hook";
 import type { RootState } from "../../redux/store";
 import { deleteCategory } from "../../redux/category_slice";
 import { useTransactionCrud } from "../../hook/useTransactionCrud";
-import { useSelector } from "react-redux";
 import { useCategoryCrud } from "../../hook/useCategoryCrud";
 
 interface TableTransactionProps {
@@ -19,7 +18,7 @@ const TableTransaction: React.FC<TableTransactionProps> = ({ type, openModal }) 
   const { removeTransaction } = useTransactionCrud();
   const dispatch = useAppDispatch();
   const getAllTransaction = useAppSelector((state: RootState) => state.transaction.items);
-  const [transactions, setTransactions] = useState<TransactionWithId[]>([]);
+  const [transactions, setTransactions] = useState<TransactionWithId[] | []>([]);
 
   useEffect(() => {
     setTransactions(getAllTransaction);
@@ -70,7 +69,7 @@ const TableTransaction: React.FC<TableTransactionProps> = ({ type, openModal }) 
           </button>
         </div>
 
-        <div className="rounded-sm h-48 max-h-48 overflow-auto">
+        <div className="rounded-sm h-48 max-h-48 overflow-auto bg-white">
           <table className="table-auto min-w-full text-sm rounded-sm shadow-md">
             <thead className="sticky top-0">
               <tr className={`${headerBg}`}>

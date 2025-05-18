@@ -1,5 +1,4 @@
-import { FiEdit, FiPlus, FiTrash } from "react-icons/fi";
-import { useCategoryCrud } from "../../hook/useCategoryCrud";
+import { FiEdit, FiPlus } from "react-icons/fi";
 
 interface CategoryItemProps {
   openModal: (id?: number) => void;
@@ -12,7 +11,6 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ openModal }) => {
   { id: 3, name: "Work", icon: "💼" },
 ];
 
-  const {remove} = useCategoryCrud();
 
   return (
     <div className="p-6">
@@ -39,9 +37,9 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ openModal }) => {
               <button onClick={() => openModal(cat.id)} className="text-gray-500 hover:text-blue-600">
                 <FiEdit className="w-4 h-4" />
               </button>
-              <button onClick={() => remove(cat.id)} className="text-red-500 hover:text-red-700">
+              {/* <button onClick={() => remove(cat.id)} className="text-red-500 hover:text-red-700">
                 <FiTrash className="w-4 h-4" />
-              </button>
+              </button> */}
             </div>
           </div>
         ))}

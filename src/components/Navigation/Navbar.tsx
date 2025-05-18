@@ -1,6 +1,6 @@
 import { CreditCard, Home } from "react-feather";
 import { FcStatistics } from "react-icons/fc";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../hook/redux_hook";
@@ -28,13 +28,17 @@ const Navbar = () => {
     selectedMenu: state.nav.selectedMenu,
   }));
 
-  const location = useLocation();
+  console.log(`Selected MENU : ${selectedMenu}`)
 
   return (
     <nav className="mt-6">
       <ul className="flex flex-col space-y-2 w-full">
         {navItems.map((item, index) => {
-          const isSelected = selectedMenu === index && location.pathname === item.link;
+          console.log(index);
+          console.log(location.pathname)
+          console.log(item.link);
+          
+          const isSelected = Number(selectedMenu) === Number(index) ;
           const baseClasses = "flex items-center h-8 cursor-pointer";
           const spacing = isOpen ? "justify-around mx-4 px-3" : "justify-center";
           const active =

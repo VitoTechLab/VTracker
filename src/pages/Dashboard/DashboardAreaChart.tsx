@@ -1,5 +1,4 @@
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
-import { useTransactionCrud } from '../../hook/useTransactionCrud'
 
 const data = [
   {

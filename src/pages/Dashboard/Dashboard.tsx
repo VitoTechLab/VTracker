@@ -9,11 +9,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useState, useMemo } from "react";
-import { useAppDispatch } from "../../hook/redux_hook";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
-import type { TransactionList, TransactionWithId } from "../../database/queries";
-import DashboardCard from "./DashboardCard";
+// import DashboardCard from "./DashboardCard";
 
 // Dummy transactions (kalau redux kosong)
 const dummyTransactions = [
@@ -98,10 +96,10 @@ const Dashboard = () => {
 
   return (
     <div style={{ width: "100%", height: 350 }}>
-      <DashboardCard />
+      {/* <DashboardCard /> */}
       <div style={{ marginBottom: 10 }}>
         <label>
-          Mode tampilan:{" "}
+          {/* Mode tampilan:{" "} */}
           <select value={mode} onChange={(e) => setMode(e.target.value as "daily" | "monthly")}>
             <option value="daily">Harian</option>
             <option value="monthly">Bulanan</option>

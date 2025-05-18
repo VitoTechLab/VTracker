@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store";
 
 export default function DashboardCard() {
   const [balance, setBalance] = useState(0);
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
 
-  // Contoh: Load data saat aplikasi dimulai
+  const transaction = useSelector((state: RootState) => state.transaction.items);
+  const incomes = transaction.map(t => t.type === "income" ? setIncome(prev => prev += t.amount) : 0);
+
   useEffect(() => {
-    // Ganti logic ini dengan fetch dari API/localStorage nanti
-    const fetchedIncome = 8000;
+    const fetchedIncome = 8000
     const fetchedExpense = 3500;
     setIncome(fetchedIncome);
     setExpense(fetchedExpense);
     setBalance(fetchedIncome - fetchedExpense);
-  }, []);
+  }, [incomes]);
 
   return (
     <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
