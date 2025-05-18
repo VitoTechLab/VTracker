@@ -1,0 +1,177 @@
+[
+  {
+    "id": 1,
+    "name": "Gaji",
+    "type": "income",
+    "icon": "FaMoneyCheckAlt",
+    "iconLib": "fa"
+  },
+  {
+    "id": 2,
+    "name": "Bonus",
+    "type": "income",
+    "icon": "FaGift",
+    "iconLib": "fa"
+  },
+  {
+    "id": 3,
+    "name": "Bunga Bank",
+    "type": "income",
+    "icon": "FaUniversity",
+    "iconLib": "fa"
+  },
+  {
+    "id": 4,
+    "name": "Investasi",
+    "type": "income",
+    "icon": "FaChartLine",
+    "iconLib": "fa"
+  },
+  {
+    "id": 5,
+    "name": "Jual Barang",
+    "type": "income",
+    "icon": "FaShoppingBag",
+    "iconLib": "fa"
+  },
+  {
+    "id": 6,
+    "name": "Freelance",
+    "type": "income",
+    "icon": "FaLaptopCode",
+    "iconLib": "fa"
+  },
+  {
+    "id": 7,
+    "name": "Cashback",
+    "type": "income",
+    "icon": "MdAttachMoney",
+    "iconLib": "md"
+  },
+  {
+    "id": 8,
+    "name": "Hadiah",
+    "type": "income",
+    "icon": "FaGift",
+    "iconLib": "fa"
+  },
+  {
+    "id": 9,
+    "name": "Penjualan Aset",
+    "type": "income",
+    "icon": "FaBuilding",
+    "iconLib": "fa"
+  },
+  {
+    "id": 10,
+    "name": "Lain-lain",
+    "type": "income",
+    "icon": "FaPlusCircle",
+    "iconLib": "fa"
+  },
+  {
+    "id": 11,
+    "name": "Makanan & Minuman",
+    "type": "expense",
+    "icon": "FaUtensils",
+    "iconLib": "fa"
+  },
+  {
+    "id": 12,
+    "name": "Transportasi",
+    "type": "expense",
+    "icon": "FaBusAlt",
+    "iconLib": "fa"
+  },
+  {
+    "id": 13,
+    "name": "Belanja",
+    "type": "expense",
+    "icon": "FaShoppingCart",
+    "iconLib": "fa"
+  },
+  {
+    "id": 14,
+    "name": "Tagihan",
+    "type": "expense",
+    "icon": "MdReceipt",
+    "iconLib": "md"
+  },
+  {
+    "id": 15,
+    "name": "Kesehatan",
+    "type": "expense",
+    "icon": "FaHeartbeat",
+    "iconLib": "fa"
+  },
+  {
+    "id": 16,
+    "name": "Pendidikan",
+    "type": "expense",
+    "icon": "FaBookOpen",
+    "iconLib": "fa"
+  },
+  {
+    "id": 17,
+    "name": "Hiburan",
+    "type": "expense",
+    "icon": "MdMovie",
+    "iconLib": "md"
+  },
+  {
+    "id": 18,
+    "name": "Langganan",
+    "type": "expense",
+    "icon": "MdSubscriptions",
+    "iconLib": "md"
+  },
+  {
+    "id": 19,
+    "name": "Rumah & Sewa",
+    "type": "expense",
+    "icon": "FaHome",
+    "iconLib": "fa"
+  },
+  {
+    "id": 20,
+    "name": "Donasi",
+    "type": "expense",
+    "icon": "FaHandsHelping",
+    "iconLib": "fa"
+  },
+  {
+    "id": 21,
+    "name": "Liburan",
+    "type": "expense",
+    "icon": "FaUmbrellaBeach",
+    "iconLib": "fa"
+  },
+  {
+    "id": 22,
+    "name": "Kecantikan",
+    "type": "expense",
+    "icon": "FaSpa",
+    "iconLib": "fa"
+  },
+  {
+    "id": 23,
+    "name": "Hutang / Cicilan",
+    "type": "expense",
+    "icon": "FaHandHoldingUsd",
+    "iconLib": "fa"
+  },
+  {
+    "id": 24,
+    "name": "Hewan Peliharaan",
+    "type": "expense",
+    "icon": "FaPaw",
+    "iconLib": "fa"
+  },
+  {
+    "id": 25,
+    "name": "Lain-lain",
+    "type": "expense",
+    "icon": "FaMinusCircle",
+    "iconLib": "fa"
+  }
+]
