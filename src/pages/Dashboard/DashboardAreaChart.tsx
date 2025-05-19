@@ -1,74 +1,132 @@
-import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
+import { useSelector } from 'react-redux';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Brush } from 'recharts'
+import type { RootState } from '../../redux/store';
+import { useMemo, useState } from 'react';
+const dummyTransactions = [
+  { date: "2025-05-01", income: 3000, expense: 700 },
+  { date: "2025-05-02", income: 400, expense: 0 },
+  { date: "2025-05-03", income: 0, expense: 50 },
+  { date: "2025-05-04", income: 1200, expense: 300 },
+  { date: "2025-05-05", income: 900, expense: 100 },
+  { date: "2025-05-06", income: 700, expense: 200 },
+  { date: "2025-05-07", income: 1100, expense: 500 },
+  { date: "2025-05-08", income: 600, expense: 0 },
+  { date: "2025-05-09", income: 0, expense: 400 },
+  { date: "2025-05-10", income: 800, expense: 300 },
+  { date: "2025-05-11", income: 500, expense: 200 },
+  { date: "2025-05-12", income: 950, expense: 150 },
+  { date: "2025-05-13", income: 1000, expense: 0 },
+  { date: "2025-05-14", income: 0, expense: 250 },
+  { date: "2025-05-15", income: 600, expense: 100 },
+  { date: "2025-05-16", income: 1200, expense: 300 },
+  { date: "2025-05-17", income: 700, expense: 200 },
+  { date: "2025-05-18", income: 900, expense: 400 },
+  { date: "2025-05-19", income: 1100, expense: 350 },
+  { date: "2025-05-20", income: 1300, expense: 500 },
+];
 
-const data = [
-  {
-    "name": "Page A",
-    "uv": 4000,
-    "pv": 2400,
-    "amt": 2400
-  },
-  {
-    "name": "Page B",
-    "uv": 3000,
-    "pv": 1398,
-    "amt": 2210
-  },
-  {
-    "name": "Page C",
-    "uv": 2000,
-    "pv": 9800,
-    "amt": 2290
-  },
-  {
-    "name": "Page D",
-    "uv": 2780,
-    "pv": 3908,
-    "amt": 2000
-  },
-  {
-    "name": "Page E",
-    "uv": 1890,
-    "pv": 4800,
-    "amt": 2181
-  },
-  {
-    "name": "Page F",
-    "uv": 2390,
-    "pv": 3800,
-    "amt": 2500
-  },
-  {
-    "name": "Page G",
-    "uv": 3490,
-    "pv": 4300,
-    "amt": 2100
-  }
-]
+type DailyData = { date: string; income: number; expense: number };
+type MonthlyData = { month: string; income: number; expense: number };
 
 const DashboardAreaChart = () => {
+const transactions = useSelector((state: RootState) => state.transaction.items);
 
+  const [mode, setMode] = useState<"daily" | "monthly">("daily");
+
+  const groupedDailyData = [
+    ...dummyTransactions,
+  ...transactions.reduce<DailyData[]>((acc, transaction) => {
+    const date = transaction.date;
+    const existing = acc.find(item => item.date === date);
+
+    if (existing) {
+      if (transaction.type === "income") existing.income += transaction.amount;
+      else existing.expense += transaction.amount;
+    } else {
+      acc.push({
+        date,
+        income: transaction.type === "income" ? transaction.amount : 0,
+        expense: transaction.type === "expense" ? transaction.amount : 0,
+      });
+    }
+
+    return acc;
+  }, []),
+  
+];
+
+  const groupedMonthlyData = useMemo(() => {
+    return transactions.reduce<MonthlyData[]>((acc, transaction) => {
+      const [year, month] = transaction.date.split("-");
+      const key = `${year}-${month}`;
+      const existing = acc.find(item => item.month === key);
+
+      if (existing) {
+        if (transaction.type === "income") existing.income += transaction.amount;
+        else existing.expense += transaction.amount;
+      } else {
+        acc.push({
+          month: key,
+          income: transaction.type === "income" ? transaction.amount : 0,
+          expense: transaction.type === "expense" ? transaction.amount : 0,
+        });
+      }
+
+      return acc;
+    }, []);
+  }, [transactions]);
+
+  const data = mode === "daily" ? groupedDailyData : groupedMonthlyData;
+  const dataKey = mode === "daily" ? "date" : "month";
+
+  const brushStartIndex = Math.max(0, data.length - 7);
+  const brushEndIndex = data.length - 1;
   
   return (
-    <AreaChart width={230} height={150} data={data}
-  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-  <defs>
-    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-      <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
-    </linearGradient>
-    <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-      <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
-    </linearGradient>
-  </defs>
-  <XAxis dataKey="name" />
-  <YAxis />
-  <CartesianGrid strokeDasharray="3 3" />
-  <Tooltip />
-  <Area type="monotone" dataKey="uv" stroke="#8884d8" fillOpacity={1} fill="url(#colorUv)" />
-  <Area type="monotone" dataKey="pv" stroke="#82ca9d" fillOpacity={1} fill="url(#colorPv)" />
-  <Area type="monotone" dataKey="amt" stroke="#89ib9e" fillOpacity={1} fill="url(#colorPv)" />
-</AreaChart>
+    <>
+    <div style={{ marginBottom: 10 }}>
+        <label>
+          {/* Mode tampilan:{" "} */}
+          <select value={mode} onChange={(e) => setMode(e.target.value as "daily" | "monthly")}>
+            <option value="daily">Harian</option>
+            <option value="monthly">Bulanan</option>
+          </select>
+        </label>
+      </div>
+
+      <ResponsiveContainer width="80%" height="80%">
+        <AreaChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey={dataKey} />
+          <YAxis />
+          <Tooltip />
+          <Area
+            type="monotone"
+            dataKey="income"
+            stroke="#4caf50"
+            fill="#a5d6a7"
+            name="Income"
+          />
+          <Area
+            type="monotone"
+            dataKey="expense"
+            stroke="#f44336"
+            fill="#ef9a9a"
+            name="Expense"
+          />
+          {data.length > 7 && (
+            <Brush
+              dataKey={dataKey}
+              height={30}
+              stroke="#8884d8"
+              startIndex={brushStartIndex}
+              endIndex={brushEndIndex}
+            />
+          )}
+        </AreaChart>
+      </ResponsiveContainer>
+    </>
+   
   )
 }
 

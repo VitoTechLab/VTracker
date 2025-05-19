@@ -8,16 +8,24 @@ export default function DashboardCard() {
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
 
-  const transaction = useSelector((state: RootState) => state.transaction.items);
-  const incomes = transaction.map(t => t.type === "income" ? setIncome(prev => prev += t.amount) : 0);
+  const transactions = useSelector((state: RootState) => state.transaction.items);
 
   useEffect(() => {
-    const fetchedIncome = 8000
-    const fetchedExpense = 3500;
-    setIncome(fetchedIncome);
-    setExpense(fetchedExpense);
-    setBalance(fetchedIncome - fetchedExpense);
-  }, [incomes]);
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach((t) => {
+      if (t.type === "income") {
+        totalIncome += t.amount;
+      } else if (t.type === "expense") {
+        totalExpense += t.amount;
+      }
+    });
+
+    setIncome(totalIncome);
+    setExpense(totalExpense);
+    setBalance(totalIncome - totalExpense);
+  }, [transactions]);
 
   return (
     <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">

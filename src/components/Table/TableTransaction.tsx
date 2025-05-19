@@ -52,7 +52,7 @@ const TableTransaction: React.FC<TableTransactionProps> = ({ type, openModal }) 
   const headerBg = type === "income" ? "bg-green-700" : "bg-red-700";
   const headerText = "text-white";
   const borderColor = type === "income" ? "border-green-900" : "border-red-900";
-  const buttonBg = type === "income" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700";
+  const buttonBg = type === "income" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600";
 
   return (
     <div className="flex gap-6 flex-wrap md:flex-nowrap border border-gray-200 rounded-lg">
