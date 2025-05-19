@@ -18,3 +18,11 @@ export const createTransactionTable = `
     FOREIGN KEY (categoryId) REFERENCES category(id) ON DELETE SET NULL
   );
 `;
+
+export const createBalance = `
+    CREATE TABLE IF NOT EXISTS balance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    amount INTEGER NOT NULL,
+    last_updated TEXT NOT NULL
+  );
+`
