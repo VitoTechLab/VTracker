@@ -1,94 +1,66 @@
-import { FaTimes } from "react-icons/fa";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
   onClosed: () => void;
   children: React.ReactNode;
+  title?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClosed, children }) => {
-  if (!isOpen) return null;
+const backdropMotion = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
 
+const containerMotion = {
+  initial: { opacity: 0, y: 40, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 40, scale: 0.96 },
+};
+
+const Modal = ({ isOpen, onClosed, children, title }: ModalProps) => {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-saturate-150 bg-black/30"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="relative w-full max-w-md p-6 bg-white rounded-xl shadow-lg">
-        <button
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xl"
+          role="dialog"
+          aria-modal="true"
+          aria-label={title ?? "Dialog"}
           onClick={onClosed}
-          className="absolute top-14 right-13 text-gray-500 hover:text-gray-800"
-          aria-label="Close modal"
+          {...backdropMotion}
         >
-          <FaTimes className="w-5 h-5" />
-        </button>
-        {children}
-      </div>
-    </div>
+          <motion.div
+            className="relative w-full max-w-lg rounded-3xl border border-[var(--border-soft)]/70 bg-[var(--surface-0)]/95 p-6 text-[var(--text-primary)] shadow-[0_30px_120px_-60px_rgba(15,23,42,0.8)] backdrop-blur-xl transition-colors duration-500 dark:bg-[var(--surface-card)]/95"
+            onClick={(event) => event.stopPropagation()}
+            {...containerMotion}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+          >
+            <button
+              type="button"
+              onClick={onClosed}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-soft)]/70 text-[var(--text-secondary)] transition hover:border-[var(--accent)]/60 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+              aria-label="Close modal"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {title && (
+              <header className="mb-6 pr-10">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h2>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Complete the form to continue.</p>
+              </header>
+            )}
+
+            <div className="max-h-[80vh] overflow-y-auto pr-2">{children}</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
 export default Modal;
 
-
-
-// import { FaTimes } from "react-icons/fa";
-// import { motion, AnimatePresence } from "framer-motion";
-
-// interface ModalProps {
-//   isOpen: boolean;
-//   onClosed: () => void;
-//   children: React.ReactNode;
-// }
-
-// const backdropVariants = {
-//   visible: { opacity: 1 },
-//   hidden: { opacity: 0 },
-// };
-
-// const modalVariants = {
-//   hidden: { opacity: 0, scale: 0.9 },
-//   visible: { opacity: 1, scale: 1 },
-//   exit: { opacity: 0, scale: 0.9 },
-// };
-
-// const Modal: React.FC<ModalProps> = ({ isOpen, onClosed, children }) => {
-//   return (
-//     <AnimatePresence>
-//       {isOpen && (
-//         <motion.div
-//           className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-//           variants={backdropVariants}
-//           initial="hidden"
-//           animate="visible"
-//           exit="hidden"
-//           onClick={onClosed} // Klik background juga tutup modal
-//           aria-modal="true"
-//           role="dialog"
-//         >
-//           <motion.div
-//             className="relative w-full max-w-md p-6 bg-white rounded-xl shadow-lg"
-//             variants={modalVariants}
-//             initial="hidden"
-//             animate="visible"
-//             exit="exit"
-//             onClick={(e) => e.stopPropagation()} // Jangan tutup saat klik konten modal
-//             transition={{ duration: 0.25 }}
-//           >
-//             <button
-//               onClick={onClosed}
-//               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
-//               aria-label="Close modal"
-//             >
-//               <FaTimes className="w-5 h-5" />
-//             </button>
-//             {children}
-//           </motion.div>
-//         </motion.div>
-//       )}
-//     </AnimatePresence>
-//   );
-// };
-
-// export default Modal;
