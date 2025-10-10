@@ -56,7 +56,9 @@ export const useCategoryCrud = () => {
 
   const getAllCategory = useCallback(() => {
     try {
-      if (!database?.db) return;
+      if (!database?.db) {
+        return [];
+      }
       return findAllCategory(database.db);
     } catch (error) {
       console.error('Failed to fetch categories:', error);

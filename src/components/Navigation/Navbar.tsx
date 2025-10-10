@@ -49,10 +49,10 @@ const Navbar = ({ orientation = "vertical" }: NavbarProps) => {
   }, [dispatch, selectedMenu, location.pathname]);
 
   const baseItemClassesVertical =
-    "group relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300";
+    "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-200";
 
   const baseItemClassesMobile =
-    "group flex flex-1 flex-col items-center gap-1 text-xs font-medium transition-all duration-300";
+    "group flex flex-1 flex-col items-center gap-1 text-xs font-medium transition-colors duration-200";
 
   const renderVerticalNav = () => (
     <ul className="flex flex-col gap-2 px-2">
@@ -66,23 +66,20 @@ const Navbar = ({ orientation = "vertical" }: NavbarProps) => {
               aria-current={isActive ? "page" : undefined}
               className={`${baseItemClassesVertical} ${
                 isActive
-                  ? "bg-[var(--accent)]/15 text-[var(--text-primary)] shadow-[inset_0_0_0_1px_rgba(57,255,20,0.35)]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--surface-1)]/60 hover:text-[var(--text-primary)] dark:hover:bg-[var(--surface-2)]"
+                  ? "bg-[var(--accent)]/12 text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--surface-1)] hover:text-[var(--text-primary)] dark:hover:bg-[var(--surface-2)]"
               }`}
             >
               <span
-                className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-all ${
+                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors duration-200 ${
                   isActive
                     ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
-                    : "border-transparent bg-[var(--surface-1)]/60 text-[var(--text-secondary)] group-hover:border-[var(--accent)]/50 group-hover:text-[var(--accent)] dark:bg-[var(--surface-2)]"
+                    : "border-transparent bg-[var(--surface-1)] text-[var(--text-secondary)] group-hover:border-[var(--accent)]/40 group-hover:text-[var(--accent)] dark:bg-[var(--surface-2)]"
                 }`}
               >
                 {item.icon}
               </span>
               {isOpen && <span>{item.label}</span>}
-              {isActive && isOpen && (
-                <span className="absolute left-2 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)]" aria-hidden="true" />
-              )}
             </NavLink>
           </li>
         );
@@ -101,16 +98,14 @@ const Navbar = ({ orientation = "vertical" }: NavbarProps) => {
               aria-label={item.label}
               onClick={() => dispatch(setSelectedMenu(index))}
               className={`${baseItemClassesMobile} ${
-                isActive
-                  ? "text-[var(--text-primary)]"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                isActive ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               <span
-                className={`flex h-10 w-10 items-center justify-center rounded-[18px] border transition-all ${
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors duration-200 ${
                   isActive
-                    ? "border-[var(--accent)] bg-[var(--accent)]/25 text-[var(--accent)] shadow-[0_10px_25px_-20px_rgba(57,255,20,0.8)]"
-                    : "border-transparent bg-[var(--surface-1)]/70 text-[var(--text-secondary)] dark:bg-[var(--surface-2)]"
+                    ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
+                    : "border-transparent bg-[var(--surface-1)] text-[var(--text-secondary)] dark:bg-[var(--surface-2)]"
                 }`}
               >
                 {item.icon}

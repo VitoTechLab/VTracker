@@ -22,6 +22,20 @@ type Summary = {
   recentExpense: number;
 };
 
+type SmallCard = {
+  id: string;
+  label: string;
+  value: string;
+  rawValue: number;
+  fractionDigits?: number;
+  delta: number;
+  deltaLabel: string;
+  icon: JSX.Element;
+  tone: "positive" | "negative" | "info" | "neutral";
+  isPercentage?: boolean;
+  subLabel: string;
+};
+
 const DashboardCard = () => {
   const transactions = useSelector((state: RootState) => state.transaction.items);
 
@@ -110,9 +124,7 @@ const DashboardCard = () => {
       accumulator.totalIncome === 0 ? 0 : (accumulator.totalExpense / accumulator.totalIncome) * 100;
     const dailyBurn = accumulator.currentExpense === 0 ? 0 : accumulator.currentExpense / 30;
     const runwayDays =
-      dailyBurn === 0
-        ? Number.POSITIVE_INFINITY
-        : Math.max(0, Math.floor(balance / dailyBurn));
+      dailyBurn === 0 ? Number.POSITIVE_INFINITY : Math.max(0, Math.floor(balance / dailyBurn));
     const netChange = accumulator.currentWindowNet - accumulator.previousWindowNet;
     const netChangePercent =
       accumulator.previousWindowNet === 0
@@ -128,7 +140,7 @@ const DashboardCard = () => {
       averageTransaction,
       savingsRate,
       expenseToIncomeRatio,
-      runwayDays: Number.isFinite(runwayDays) ? runwayDays : 90,
+      runwayDays,
       incomeDelta: accumulator.currentIncome - accumulator.previousIncome,
       expenseDelta: accumulator.currentExpense - accumulator.previousExpense,
       netChange,
@@ -138,7 +150,19 @@ const DashboardCard = () => {
     };
   }, [transactions]);
 
-  const formatCurrency = (value: number, maximumFractionDigits = 0) =>
+  const formatCurrency = (value: number, maximumFractionDigits = 0) => {
+    const absolute = Math.abs(value);
+    const useCompact = absolute >= 1_000_000_000;
+
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: useCompact ? "compact" : "standard",
+      maximumFractionDigits: useCompact ? 2 : maximumFractionDigits,
+    }).format(value);
+  };
+
+  const formatFullCurrency = (value: number, maximumFractionDigits = 0) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -146,7 +170,7 @@ const DashboardCard = () => {
     }).format(value);
 
   const formatDelta = (value: number) => {
-    const prefix = value >= 0 ? "+" : "−";
+    const prefix = value >= 0 ? "+" : "-";
     return `${prefix}${formatCurrency(Math.abs(value))}`;
   };
 
@@ -158,64 +182,102 @@ const DashboardCard = () => {
       maximumFractionDigits: 1,
     }).format(value);
 
-  const smallCards = [
+  const runwayLabel =
+    Number.isFinite(summary.runwayDays) && summary.runwayDays !== Number.POSITIVE_INFINITY
+      ? `Runway ~${summary.runwayDays} days`
+      : "No expenses recorded in the last 30 days";
+
+  const smallCards: SmallCard[] = [
     {
       id: "income",
       label: "Cash In (30d)",
       value: formatCurrency(summary.recentIncome),
+      rawValue: summary.recentIncome,
+      fractionDigits: 0,
       delta: summary.incomeDelta,
       deltaLabel: formatDelta(summary.incomeDelta),
       icon: <ArrowDownRight className="h-5 w-5" />,
-      accent: "from-emerald-400/15 to-emerald-500/10 text-emerald-500",
+      tone: "positive",
       subLabel: `${transactions.filter((t) => t.type === "income").length} income records`,
     },
     {
       id: "expense",
       label: "Cash Out (30d)",
       value: formatCurrency(summary.recentExpense),
+      rawValue: summary.recentExpense,
+      fractionDigits: 0,
       delta: summary.expenseDelta,
       deltaLabel: formatDelta(summary.expenseDelta),
       icon: <ArrowUpRight className="h-5 w-5" />,
-      accent: "from-rose-400/15 to-rose-500/10 text-rose-500",
+      tone: "negative",
       subLabel: `${transactions.filter((t) => t.type === "expense").length} expense records`,
     },
     {
       id: "average",
       label: "Average Ticket",
       value: formatCurrency(summary.averageTransaction, summary.averageTransaction > 100 ? 0 : 2),
+      rawValue: summary.averageTransaction,
+      fractionDigits: summary.averageTransaction > 100 ? 0 : 2,
       delta: summary.netChange,
-      deltaLabel: `${summary.netChange >= 0 ? "+" : "−"}${compactCurrency(Math.abs(summary.netChange))} net`,
+      deltaLabel: `${summary.netChange >= 0 ? "+" : "-"}${compactCurrency(Math.abs(summary.netChange))} net`,
       icon: <TrendingUp className="h-5 w-5" />,
-      accent: "from-sky-400/15 to-sky-500/10 text-sky-500",
-      subLabel: `Net change vs last month`,
+      tone: "info",
+      subLabel: "Net change vs last month",
     },
     {
       id: "savings",
       label: "Savings Health",
       value: `${summary.savingsRate.toFixed(0)}%`,
+      rawValue: summary.savingsRate,
+      fractionDigits: 1,
       delta: summary.netChangePercent,
-      deltaLabel: `${summary.netChangePercent >= 0 ? "+" : "−"}${Math.abs(summary.netChangePercent).toFixed(1)}%`,
+      deltaLabel: `${summary.netChangePercent >= 0 ? "+" : "-"}${Math.abs(summary.netChangePercent).toFixed(1)}%`,
       icon: <Gauge className="h-5 w-5" />,
-      accent: "from-lime-400/15 to-lime-500/10 text-lime-500",
-      subLabel: `Runway ~${summary.runwayDays} days`,
+      tone: "info",
+      isPercentage: true,
+      subLabel: runwayLabel,
     },
   ];
 
+  const toneStyles: Record<SmallCard["tone"], { border: string; icon: string }> = {
+    positive: {
+      border: "border-emerald-200/60",
+      icon: "bg-emerald-100 text-emerald-600",
+    },
+    negative: {
+      border: "border-rose-200/60",
+      icon: "bg-rose-100 text-rose-600",
+    },
+    info: {
+      border: "border-sky-200/60",
+      icon: "bg-sky-100 text-sky-600",
+    },
+    neutral: {
+      border: "border-[var(--border-soft)]",
+      icon: "bg-[var(--surface-1)] text-[var(--accent)]",
+    },
+  };
+
   return (
     <section className="grid gap-6 lg:grid-cols-12" aria-label="Financial summary">
-      <article className="relative overflow-hidden rounded-3xl border border-[var(--border-soft)]/70 bg-[radial-gradient(circle_at_top,#06111f_0%,#020617_70%)] p-8 text-white shadow-[0_35px_80px_-45px_rgba(15,23,42,0.75)] lg:col-span-5">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-[var(--accent)]/30 blur-3xl" />
-          <div className="absolute bottom-[-3rem] left-[-2rem] h-48 w-48 rounded-full bg-sky-500/30 blur-3xl" />
-        </div>
-
-        <div className="relative flex items-start justify-between gap-4">
+      <article className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-8 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)] lg:col-span-5">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Total Balance</p>
-            <p className="mt-3 text-4xl font-semibold tracking-tight">{formatCurrency(summary.balance)}</p>
-            <p className="mt-3 text-sm text-slate-400">
-              Balance change <span className="font-semibold text-white">{formatDelta(summary.netChange)}</span> vs
-              previous 30 days
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Total Balance</p>
+            <p
+              className="mt-3 text-4xl font-semibold text-[var(--text-primary)]"
+              title={formatFullCurrency(summary.balance)}
+            >
+              {formatCurrency(summary.balance)}
+            </p>
+            <p className="mt-3 text-sm text-[var(--text-muted)]">
+              Balance change{" "}
+              <span
+                className={`font-semibold ${summary.netChange >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
+              >
+                {formatDelta(summary.netChange)}
+              </span>{" "}
+              vs previous 30 days
             </p>
           </div>
           <IconWrapper>
@@ -223,60 +285,87 @@ const DashboardCard = () => {
           </IconWrapper>
         </div>
 
-        <div className="relative mt-6 h-2 rounded-full bg-white/10">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[var(--accent)] to-emerald-400"
-            style={{ width: `${Math.min(100, summary.savingsRate || 0)}%` }}
-            aria-label="Savings rate progress"
-          />
+        <div className="mt-6">
+          <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span>Savings rate</span>
+            <span>{summary.savingsRate.toFixed(0)}%</span>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-[var(--surface-2)]">
+            <div
+              className="h-full rounded-full bg-[var(--accent)]"
+              style={{ width: `${Math.min(100, Math.max(0, summary.savingsRate || 0))}%` }}
+              aria-label="Savings rate progress"
+            />
+          </div>
         </div>
 
-        <div className="relative mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Income to date</p>
-            <p className="mt-2 text-lg font-semibold">{formatCurrency(summary.totalIncome)}</p>
-            <p className="mt-1 text-xs text-emerald-300">
-              {summary.incomeDelta >= 0 ? "▲" : "▼"} {formatDelta(summary.incomeDelta)}
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)]/70 p-4 transition-colors duration-300 dark:bg-[var(--surface-2)]/70">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Income to date</p>
+            <p
+              className="mt-2 text-lg font-semibold text-[var(--text-primary)]"
+              title={formatFullCurrency(summary.totalIncome)}
+            >
+              {formatCurrency(summary.totalIncome)}
+            </p>
+            <p className={`mt-1 text-xs font-medium ${summary.incomeDelta >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+              {formatDelta(summary.incomeDelta)}
             </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Expenses to date</p>
-            <p className="mt-2 text-lg font-semibold">{formatCurrency(summary.totalExpense)}</p>
-            <p className="mt-1 text-xs text-rose-300">
-              {summary.expenseDelta >= 0 ? "▲" : "▼"} {formatDelta(summary.expenseDelta)}
+          <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)]/70 p-4 transition-colors duration-300 dark:bg-[var(--surface-2)]/70">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Expenses to date</p>
+            <p
+              className="mt-2 text-lg font-semibold text-[var(--text-primary)]"
+              title={formatFullCurrency(summary.totalExpense)}
+            >
+              {formatCurrency(summary.totalExpense)}
+            </p>
+            <p className={`mt-1 text-xs font-medium ${summary.expenseDelta >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+              {formatDelta(summary.expenseDelta)}
             </p>
           </div>
         </div>
       </article>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
-        {smallCards.map((card) => (
-          <article
-            key={card.id}
-            className={`group relative overflow-hidden rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)]/80 p-5 shadow-[0_30px_80px_-60px_rgba(15,23,42,0.65)] transition-colors duration-500 dark:bg-[var(--surface-card)]/85`}
-          >
-            <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
-            <div className="relative flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{card.label}</p>
-                <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{card.value}</p>
-                <p
-                  className={`mt-1 text-xs font-medium ${
-                    card.delta >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"
-                  }`}
-                >
-                  {card.deltaLabel}
-                </p>
-                <p className="mt-3 text-xs text-[var(--text-muted)]">{card.subLabel}</p>
+        {smallCards.map((card) => {
+          const tone = toneStyles[card.tone];
+          const valueTitle = card.isPercentage
+            ? `${card.rawValue.toFixed(card.fractionDigits ?? 0)}%`
+            : formatFullCurrency(card.rawValue, card.fractionDigits ?? 0);
+
+          return (
+            <article
+              key={card.id}
+              className={`rounded-3xl border bg-[var(--surface-0)] p-5 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)] ${tone.border}`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                    {card.label}
+                  </p>
+                  <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]" title={valueTitle}>
+                    {card.value}
+                  </p>
+                  <p
+                    className={`mt-1 text-xs font-medium ${
+                      card.delta >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"
+                    }`}
+                  >
+                    {card.deltaLabel}
+                  </p>
+                  <p className="mt-3 text-xs text-[var(--text-muted)]">{card.subLabel}</p>
+                </div>
+                <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${tone.icon}`} aria-hidden="true">
+                  {card.icon}
+                </span>
               </div>
-              <IconWrapper>{card.icon}</IconWrapper>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
 };
 
 export default DashboardCard;
-

@@ -119,12 +119,17 @@ const DashboardHistory = () => {
     };
   }, [transactions]);
 
-  const formatCurrency = (value: number, maximumFractionDigits = 0) =>
-    new Intl.NumberFormat("en-US", {
+  const formatCurrency = (value: number, maximumFractionDigits = 0) => {
+    const absolute = Math.abs(value);
+    const useCompact = absolute >= 1_000_000_000;
+
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      maximumFractionDigits,
+      notation: useCompact ? "compact" : "standard",
+      maximumFractionDigits: useCompact ? 2 : maximumFractionDigits,
     }).format(value);
+  };
 
   const formatDate = (date: string) => {
     const parsed = new Date(date);
@@ -140,7 +145,7 @@ const DashboardHistory = () => {
 
   return (
     <section className="flex flex-col gap-6">
-      <article className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)]/85 p-6 shadow-[0_30px_90px_-70px_rgba(15,23,42,0.55)] transition-colors duration-500 dark:bg-[var(--surface-card)]/85">
+      <article className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
         <header className="flex items-start justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">Recent activity</p>
@@ -160,7 +165,7 @@ const DashboardHistory = () => {
           {recentTransactions.map((transaction) => (
             <li
               key={transaction.id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--surface-2)] bg-[var(--surface-1)]/80 px-4 py-3 transition-colors duration-300 hover:border-[var(--accent)]/40 hover:bg-[var(--surface-1)]/95 dark:bg-[var(--surface-2)]/80"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)] px-4 py-3 transition-colors duration-300 hover:border-[var(--accent)]/40 hover:bg-[var(--surface-1)]/90 dark:bg-[var(--surface-2)]"
             >
               <div className="flex items-center gap-3">
                 <span
@@ -195,7 +200,7 @@ const DashboardHistory = () => {
         </ul>
       </article>
 
-      <article className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)]/85 p-6 shadow-[0_30px_90px_-70px_rgba(15,23,42,0.55)] transition-colors duration-500 dark:bg-[var(--surface-card)]/85">
+      <article className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
         <header className="flex items-start justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">Spending profile</p>
@@ -216,7 +221,7 @@ const DashboardHistory = () => {
           {topCategories.map((category) => (
             <div
               key={category.id}
-              className="rounded-2xl border border-[var(--surface-2)] bg-[var(--surface-1)]/80 p-4 dark:bg-[var(--surface-2)]/75"
+              className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)] p-4 transition-colors duration-300 dark:bg-[var(--surface-2)]"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">

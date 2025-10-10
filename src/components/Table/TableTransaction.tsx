@@ -107,7 +107,19 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
     [filteredTransactions, page],
   );
 
-  const formatCurrency = (value: number) =>
+  const formatCurrency = (value: number) => {
+    const absolute = Math.abs(value);
+    const useCompact = absolute >= 1_000_000_000;
+
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: useCompact ? "compact" : "standard",
+      maximumFractionDigits: useCompact ? 2 : 0,
+    }).format(value);
+  };
+
+  const formatFullCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -137,42 +149,64 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
         : "Expense ledger";
 
   return (
-    <section className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)]/85 p-6 shadow-[0_35px_90px_-60px_rgba(15,23,42,0.55)] transition-colors duration-500 dark:bg-[var(--surface-card)]/85">
+    <section className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">{tableTitle}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{tableTitle}</p>
           <h2 className="mt-1 text-lg font-semibold text-[var(--text-primary)]">Transaction table</h2>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
-            <span className="flex items-center gap-1 rounded-full border border-[var(--surface-2)] px-3 py-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              {summary.incomeCount} incomes {summary.income > 0 && `• ${formatCurrency(summary.income)}`}
+            <span className="flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              {summary.incomeCount} incomes
+              {summary.income > 0 && (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span className="font-semibold text-[var(--text-secondary)]" title={formatFullCurrency(summary.income)}>
+                    {formatCurrency(summary.income)}
+                  </span>
+                </>
+              )}
             </span>
-            <span className="flex items-center gap-1 rounded-full border border-[var(--surface-2)] px-3 py-1">
-              <span className="h-2 w-2 rounded-full bg-rose-400" />
-              {summary.expenseCount} expenses {summary.expense > 0 && `• ${formatCurrency(summary.expense)}`}
+            <span className="flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
+              <span className="h-2 w-2 rounded-full bg-rose-500" />
+              {summary.expenseCount} expenses
+              {summary.expense > 0 && (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span className="font-semibold text-[var(--text-secondary)]" title={formatFullCurrency(summary.expense)}>
+                    {formatCurrency(summary.expense)}
+                  </span>
+                </>
+              )}
             </span>
-            <span className="flex items-center gap-1 rounded-full border border-[var(--surface-2)] px-3 py-1">
-              Net {formatCurrency(summary.net)}
+            <span className="flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
+              Net
+              <span
+                className={`font-semibold ${summary.net >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
+                title={formatFullCurrency(summary.net)}
+              >
+                {formatCurrency(summary.net)}
+              </span>
             </span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               type="search"
               placeholder="Search by name or category"
-              className="w-64 rounded-full border border-transparent bg-[var(--surface-1)]/80 pl-10 pr-4 py-2 text-sm text-[var(--text-primary)] shadow-sm outline-none ring-1 ring-transparent transition focus:ring-[var(--accent)]/60 dark:bg-[var(--surface-2)]"
+              className="w-64 rounded-xl border border-[var(--border-soft)] bg-[var(--surface-1)] pl-9 pr-3 py-2 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]/60 focus:ring-2 focus:ring-[var(--accent)]/20 dark:bg-[var(--surface-2)]"
             />
           </div>
 
           <select
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-            className="rounded-full border border-[var(--surface-2)] bg-[var(--surface-1)]/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)] outline-none transition focus:border-[var(--accent)]/60 focus:text-[var(--accent)] dark:bg-[var(--surface-2)]"
+            className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-1)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)] outline-none transition focus:border-[var(--accent)]/60 focus:text-[var(--accent)] dark:bg-[var(--surface-2)]"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -182,10 +216,10 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-[var(--surface-2)]">
+      <div className="mt-6 overflow-hidden rounded-3xl border border-[var(--border-soft)]">
         <div className="max-h-[420px] overflow-x-auto overflow-y-auto">
-          <table className="min-w-full divide-y divide-[var(--surface-2)] text-sm">
-            <thead className="bg-[var(--surface-1)]/80 text-[var(--text-muted)] dark:bg-[var(--surface-2)]/80">
+          <table className="min-w-full divide-y divide-[var(--border-soft)] text-sm">
+            <thead className="bg-[var(--surface-1)] text-[var(--text-muted)] dark:bg-[var(--surface-2)]">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left font-medium uppercase tracking-[0.16em]">Name</th>
                 <th scope="col" className="px-6 py-3 text-left font-medium uppercase tracking-[0.16em]">Category</th>
@@ -194,7 +228,7 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
                 <th scope="col" className="px-6 py-3 text-right font-medium uppercase tracking-[0.16em]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--surface-2)] bg-[var(--surface-0)]/90 dark:bg-[var(--surface-card)]/85">
+            <tbody className="divide-y divide-[var(--border-soft)] bg-[var(--surface-0)] dark:bg-[var(--surface-card)]">
               {paginatedTransactions.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-sm text-[var(--text-muted)]">
@@ -221,10 +255,10 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span
-                          className={`grid h-10 w-10 place-items-center rounded-2xl border text-xs font-semibold ${
+                          className={`grid h-10 w-10 place-items-center rounded-xl border text-xs font-semibold ${
                             isIncome
-                              ? "border-emerald-400/50 bg-emerald-400/15 text-emerald-500"
-                              : "border-rose-400/50 bg-rose-400/15 text-rose-500"
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+                              : "border-rose-500/30 bg-rose-500/10 text-rose-600"
                           }`}
                         >
                           {isIncome ? <ArrowDownRight className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
@@ -242,8 +276,11 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-[var(--text-secondary)]">{formattedDate}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold">
-                      <span className={isIncome ? "text-[var(--success)]" : "text-[var(--danger)]"}>
-                        {isIncome ? "+" : "−"}
+                      <span
+                        className={`${isIncome ? "text-[var(--success)]" : "text-[var(--danger)]"} tabular-nums`}
+                        title={`${isIncome ? "+" : "-"}${formatFullCurrency(transaction.amount)}`}
+                      >
+                        {isIncome ? "+" : "-"}
                         {formatCurrency(transaction.amount)}
                       </span>
                     </td>
@@ -252,7 +289,7 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
                         <button
                           type="button"
                           onClick={() => onEdit(transaction)}
-                          className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--surface-2)] text-[var(--text-secondary)] transition hover:border-[var(--accent)]/60 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-soft)] text-[var(--text-secondary)] transition hover:border-[var(--accent)]/60 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40"
                           aria-label="Edit transaction"
                         >
                           <Pencil className="h-4 w-4" />
@@ -260,7 +297,7 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
                         <button
                           type="button"
                           onClick={() => handleRemove(transaction)}
-                          className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--surface-2)] text-[var(--danger)] transition hover:border-[var(--danger)]/60 hover:bg-[var(--danger)]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]/80"
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-soft)] text-[var(--danger)] transition hover:border-[var(--danger)]/60 hover:bg-[var(--danger)]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]/60"
                           aria-label="Delete transaction"
                         >
                           <Trash2 className="h-4 w-4" />

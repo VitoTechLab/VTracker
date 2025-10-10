@@ -53,8 +53,24 @@ const Transaction = () => {
     }
   }, [activeFilter]);
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+  const formatCurrency = (value: number) => {
+    const absolute = Math.abs(value);
+    const useCompact = absolute >= 1_000_000_000;
+
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: useCompact ? "compact" : "standard",
+      maximumFractionDigits: useCompact ? 2 : 0,
+    }).format(value);
+  };
+
+  const formatFullCurrency = (value: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(value);
 
   const handleCreateTransaction = (type: "income" | "expense") => {
     handleOpenModal(type);
@@ -66,27 +82,33 @@ const Transaction = () => {
 
   return (
     <section className="space-y-6">
-      <header className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)]/85 p-6 shadow-[0_35px_90px_-60px_rgba(15,23,42,0.55)] transition-colors duration-500 dark:bg-[var(--surface-card)]/80">
+      <header className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-[var(--text-muted)]">Cashflow control</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">Cashflow control</p>
             <h1 className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">Transactions</h1>
             <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">{activeDescription}</p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
-              <span className="flex items-center gap-2 rounded-full border border-[var(--surface-2)] px-3 py-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                {summary.incomeCount} incomes totaling {formatCurrency(summary.totalIncome)}
+              <span className="flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                {summary.incomeCount} incomes totaling
+                <span className="font-semibold text-[var(--text-secondary)]" title={formatFullCurrency(summary.totalIncome)}>
+                  {formatCurrency(summary.totalIncome)}
+                </span>
               </span>
-              <span className="flex items-center gap-2 rounded-full border border-[var(--surface-2)] px-3 py-1">
-                <span className="h-2 w-2 rounded-full bg-rose-400" />
-                {summary.expenseCount} expenses totaling {formatCurrency(summary.totalExpense)}
+              <span className="flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
+                <span className="h-2 w-2 rounded-full bg-rose-500" />
+                {summary.expenseCount} expenses totaling
+                <span className="font-semibold text-[var(--text-secondary)]" title={formatFullCurrency(summary.totalExpense)}>
+                  {formatCurrency(summary.totalExpense)}
+                </span>
               </span>
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)]/70 p-1 dark:bg-[var(--surface-2)]">
+            <div className="flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] p-1 dark:bg-[var(--surface-2)]">
               {filterOptions.map((option) => (
                 <button
                   key={option.id}
@@ -94,7 +116,7 @@ const Transaction = () => {
                   onClick={() => setActiveFilter(option.id)}
                   className={`flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] transition ${
                     activeFilter === option.id
-                      ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                      ? "bg-[var(--accent)] text-white shadow-sm"
                       : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   }`}
                   aria-pressed={activeFilter === option.id}
@@ -108,7 +130,7 @@ const Transaction = () => {
               <button
                 type="button"
                 onClick={() => handleCreateTransaction("income")}
-                className="flex items-center gap-2 rounded-full border border-emerald-400/60 bg-emerald-400/15 px-4 py-2 text-sm font-medium text-emerald-500 transition hover:border-emerald-400 hover:bg-emerald-400/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+                className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:border-emerald-500/60 hover:bg-emerald-500/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
               >
                 <PlusCircle className="h-4 w-4" />
                 Add income
@@ -116,7 +138,7 @@ const Transaction = () => {
               <button
                 type="button"
                 onClick={() => handleCreateTransaction("expense")}
-                className="flex items-center gap-2 rounded-full border border-rose-400/60 bg-rose-400/15 px-4 py-2 text-sm font-medium text-rose-500 transition hover:border-rose-400 hover:bg-rose-400/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60"
+                className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-500/60 hover:bg-rose-500/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/40"
               >
                 <ArrowLeftRight className="h-4 w-4" />
                 Add expense

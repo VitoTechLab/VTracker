@@ -8,7 +8,7 @@ import Category from './pages/Category/Category';
 import { Toaster } from 'react-hot-toast';
 import { useLoadData } from './hook/loadData';
 import NotFoundPage from './pages/Other/NotFoundPage';
-import ComingSoon from './pages/Other/ComingSoon';
+import Statistic from './pages/Statistic/Statistic';
 
 const App = () => {
   useDatabase();
@@ -29,7 +29,7 @@ const App = () => {
             {/* <Route path=':id' element={<TransactionDetail />} /> */}
           </Route>
 
-          <Route path="statistic" element={<ComingSoon />} />
+          <Route path="statistic" element={<Statistic />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
