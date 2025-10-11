@@ -23,7 +23,6 @@ export const initDatabase = async () => {
   try {
     const SQL = await initSqlJs({
       locateFile: file => import.meta.env.VITE_BASE_URL + file
-      // locateFile: file => `/Personal-Finance-Tracker/wasm/${file}`
     });
 
     const IDB = await openIndexedDB();

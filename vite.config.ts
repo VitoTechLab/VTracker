@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Personal-Finance-Tracker/',
+  base: '/VTracker/',
   plugins: [
     react(),
     tailwindcss(),
