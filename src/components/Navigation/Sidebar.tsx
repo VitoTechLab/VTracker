@@ -81,13 +81,15 @@ const Sidebar = () => {
               aria-label={isOpen ? "Collapse navigation" : "Expand navigation"}
               className="flex w-full items-center gap-3 rounded-2xl border border-transparent px-2 py-2 text-left transition hover:border-[var(--accent)]/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40"
             >
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent)]/20 text-sm font-semibold text-[var(--accent)]">
-                VT
-              </div>
+              <img
+                src="/vtracker.svg"
+                alt="VTracker logo"
+                className="h-10 w-10 rounded-xl border border-[var(--accent)]/30 bg-[var(--surface-0)] p-1 dark:bg-[var(--surface-card)]"
+              />
               {isOpen && (
                 <>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">VTrack</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">VTracker</p>
                     <p className="text-sm font-semibold text-[var(--text-primary)]">Expense Tracker</p>
                   </div>
                   <ChevronLeft className="ml-auto h-4 w-4 text-[var(--text-muted)]" aria-hidden="true" />

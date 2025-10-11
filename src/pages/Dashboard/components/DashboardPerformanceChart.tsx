@@ -215,6 +215,7 @@ const DashboardPerformanceChart = () => {
 
   const brushStartIndex = chartData.length > 16 ? chartData.length - 16 : 0;
   const brushEndIndex = chartData.length - 1;
+  const hasData = chartData.length > 0;
 
   return (
     <section className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
@@ -249,91 +250,97 @@ const DashboardPerformanceChart = () => {
       </header>
 
       <div className="mt-6 h-[360px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 0, right: 12, left: -12, bottom: 0 }}>
-            <defs>
-              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#16a34a" stopOpacity={0.6} />
-                <stop offset="95%" stopColor="#16a34a" stopOpacity={0.05} />
-              </linearGradient>
-              <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f87171" stopOpacity={0.7} />
-                <stop offset="95%" stopColor="#f87171" stopOpacity={0.08} />
-              </linearGradient>
-              <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563eb" stopOpacity={0.55} />
-                <stop offset="95%" stopColor="#2563eb" stopOpacity={0.08} />
-              </linearGradient>
-            </defs>
+        {hasData ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 0, right: 12, left: -12, bottom: 0 }}>
+              <defs>
+                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#16a34a" stopOpacity={0.6} />
+                  <stop offset="95%" stopColor="#16a34a" stopOpacity={0.05} />
+                </linearGradient>
+                <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f87171" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#f87171" stopOpacity={0.08} />
+                </linearGradient>
+                <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.55} />
+                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0.08} />
+                </linearGradient>
+              </defs>
 
-            <CartesianGrid stroke="rgba(148, 163, 184, 0.18)" strokeDasharray="4 8" vertical={false} />
-            <XAxis
-              dataKey={xKey}
-              tickMargin={12}
-              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={formatPeriodLabel}
-            />
-            <YAxis
-              tickFormatter={(value) =>
-                new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value as number)
-              }
-              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip content={<ChartTooltip />} cursor={{ stroke: "rgba(148, 163, 184, 0.3)", strokeWidth: 1 }} />
-            <Legend
-              verticalAlign="top"
-              align="left"
-              iconType="circle"
-              iconSize={10}
-              wrapperStyle={{ paddingBottom: 12, paddingTop: 12 }}
-            />
-            <Area
-              type="monotone"
-              dataKey="income"
-              stroke="#16a34a"
-              strokeWidth={2}
-              fill="url(#incomeGradient)"
-              name="Income"
-              dot={false}
-              activeDot={{ r: 5, strokeWidth: 0 }}
-            />
-            <Area
-              type="monotone"
-              dataKey="expense"
-              stroke="#f87171"
-              strokeWidth={2}
-              fill="url(#expenseGradient)"
-              name="Expense"
-              dot={false}
-              activeDot={{ r: 5, strokeWidth: 0 }}
-            />
-            <Area
-              type="monotone"
-              dataKey="balance"
-              stroke="#2563eb"
-              strokeWidth={1.5}
-              fill="url(#balanceGradient)"
-              name="Balance"
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0 }}
-            />
-            {chartData.length > 8 && (
-              <Brush
+              <CartesianGrid stroke="rgba(148, 163, 184, 0.18)" strokeDasharray="4 8" vertical={false} />
+              <XAxis
                 dataKey={xKey}
-                height={28}
-                startIndex={brushStartIndex}
-                endIndex={brushEndIndex}
-                travellerWidth={12}
-                stroke="rgba(148, 163, 184, 0.35)"
-                fill="rgba(15, 23, 42, 0.05)"
+                tickMargin={12}
+                tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={formatPeriodLabel}
               />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
+              <YAxis
+                tickFormatter={(value) =>
+                  new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value as number)
+                }
+                tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip content={<ChartTooltip />} cursor={{ stroke: "rgba(148, 163, 184, 0.3)", strokeWidth: 1 }} />
+              <Legend
+                verticalAlign="top"
+                align="left"
+                iconType="circle"
+                iconSize={10}
+                wrapperStyle={{ paddingBottom: 12, paddingTop: 12 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#16a34a"
+                strokeWidth={2}
+                fill="url(#incomeGradient)"
+                name="Income"
+                dot={false}
+                activeDot={{ r: 5, strokeWidth: 0 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#f87171"
+                strokeWidth={2}
+                fill="url(#expenseGradient)"
+                name="Expense"
+                dot={false}
+                activeDot={{ r: 5, strokeWidth: 0 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="balance"
+                stroke="#2563eb"
+                strokeWidth={1.5}
+                fill="url(#balanceGradient)"
+                name="Balance"
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+              />
+              {chartData.length > 8 && (
+                <Brush
+                  dataKey={xKey}
+                  height={28}
+                  startIndex={brushStartIndex}
+                  endIndex={brushEndIndex}
+                  travellerWidth={12}
+                  stroke="rgba(148, 163, 184, 0.35)"
+                  fill="rgba(15, 23, 42, 0.05)"
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="grid h-full place-items-center rounded-2xl border border-dashed border-[var(--border-soft)] bg-[var(--surface-1)] text-sm text-[var(--text-muted)] dark:bg-[var(--surface-2)]">
+            Not enough data to render performance trends yet.
+          </div>
+        )}
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
