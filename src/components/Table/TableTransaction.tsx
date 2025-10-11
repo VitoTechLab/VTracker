@@ -217,9 +217,9 @@ const TableTransaction = ({ filter, onEdit }: TableTransactionProps) => {
       </div>
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-[var(--border-soft)]">
-        <div className="max-h-[420px] overflow-x-auto overflow-y-auto">
+        <div className="relative max-h-[420px] overflow-x-auto overflow-y-auto">
           <table className="min-w-full divide-y divide-[var(--border-soft)] text-sm">
-            <thead className="bg-[var(--surface-1)] text-[var(--text-muted)] dark:bg-[var(--surface-2)]">
+            <thead className="sticky top-0 z-10 bg-[var(--surface-1)] text-[var(--text-muted)] shadow-sm dark:bg-[var(--surface-2)]">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left font-medium uppercase tracking-[0.16em]">Name</th>
                 <th scope="col" className="px-6 py-3 text-left font-medium uppercase tracking-[0.16em]">Category</th>

@@ -1,4 +1,4 @@
-import { FiEdit, FiPlus } from "react-icons/fi";
+import { FiEdit } from "react-icons/fi";
 
 interface CategoryItemProps {
   openModal: (id?: number) => void;
@@ -11,18 +11,17 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ openModal }) => {
   { id: 3, name: "Work", icon: "💼" },
 ];
 
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-semibold">Categories</h1>
-        <button
+        {/* <button
           onClick={() => openModal()}
           className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700"
         >
           <FiPlus className="w-4 h-4" />
           Add Category
-        </button>
+        </button> */}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

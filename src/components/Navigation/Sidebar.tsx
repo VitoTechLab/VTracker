@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, MoonStar, PlusCircle, Sun } from "lucide-react";
+import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import { toggleSidebar } from "../../redux/nav_slice";
 import { useAppDispatch } from "../../hook/redux_hook";
 import type { RootState } from "../../redux/store";
+import { useTheme } from "../../hook/useTheme";
 
 const formatCurrency = (value: number) => {
   const absolute = Math.abs(value);
@@ -30,6 +32,7 @@ const Sidebar = () => {
   const dispatch = useAppDispatch();
   const isOpen = useSelector((state: RootState) => state.nav.isOpen);
   const transactions = useSelector((state: RootState) => state.transaction.items);
+  const { theme, toggleTheme } = useTheme();
 
   const { balance, income, expense, savingsRate } = useMemo(() => {
     const summary = transactions.reduce(
@@ -57,74 +60,106 @@ const Sidebar = () => {
     };
   }, [transactions]);
 
+  const themeLabel = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+
+  const expandedWidth = 280;
+  const collapsedWidth = 80;
+
   return (
     <>
       <motion.aside
-        initial={{ width: isOpen ? 280 : 96 }}
-        animate={{ width: isOpen ? 280 : 96 }}
+        initial={{ width: isOpen ? expandedWidth : collapsedWidth }}
+        animate={{ width: isOpen ? expandedWidth : collapsedWidth }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="relative hidden h-screen flex-col border-r border-[var(--border-soft)] bg-[var(--surface-0)]/98 pb-6 transition-colors duration-300 dark:bg-[var(--surface-card)]/95 lg:flex"
+        className="relative hidden min-h-screen max-h-screen flex-col overflow-hidden border-r border-[var(--border-soft)] bg-[var(--surface-0)]/98 transition-colors duration-300 dark:bg-[var(--surface-card)]/95 lg:flex"
       >
-        <div className="flex items-center justify-between px-4 pt-6 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent)]/15 text-sm font-semibold text-[var(--accent)]">
-              FT
-            </div>
-            {isOpen && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">FinTrack</p>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">Personal Finance</p>
+        <div className="flex h-full flex-col">
+          <div className="px-4 pt-6 pb-4">
+            <button
+              type="button"
+              onClick={() => dispatch(toggleSidebar())}
+              aria-label={isOpen ? "Collapse navigation" : "Expand navigation"}
+              className="flex w-full items-center gap-3 rounded-2xl border border-transparent px-2 py-2 text-left transition hover:border-[var(--accent)]/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40"
+            >
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent)]/20 text-sm font-semibold text-[var(--accent)]">
+                VT
               </div>
-            )}
+              {isOpen && (
+                <>
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">VTrack</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Expense Tracker</p>
+                  </div>
+                  <ChevronLeft className="ml-auto h-4 w-4 text-[var(--text-muted)]" aria-hidden="true" />
+                </>
+              )}
+            </button>
           </div>
 
-          <button
-            type="button"
-            aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
-            onClick={() => dispatch(toggleSidebar())}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-soft)] bg-[var(--surface-1)] text-[var(--text-secondary)] transition hover:border-[var(--accent)]/60 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35 dark:bg-[var(--surface-2)]"
-          >
-            {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
-        </div>
+          <div className="flex-1 px-2 pb-6">
+            <Navbar orientation="vertical" />
+          </div>
 
-        <div className="flex-1 overflow-y-auto px-2">
-          <Navbar orientation="vertical" />
-        </div>
+          <div className="space-y-4 border-t border-[var(--border-soft)] px-4 py-4">
+            {isOpen && (
+              <Link
+                to="/transaction"
+                aria-label="Create new transaction"
+                title="Create new transaction"
+                className="flex items-center justify-center gap-2 rounded-2xl border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-3 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35"
+              >
+                <PlusCircle className="h-4 w-4" />
+                <span>New Transaction</span>
+              </Link>
+            )}
 
-        <div className="border-t border-[var(--border-soft)] px-4 pt-4">
-          <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)] p-4 text-sm text-[var(--text-secondary)] dark:bg-[var(--surface-2)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Quick Summary</p>
-            <p
-              className="mt-2 text-2xl font-semibold text-[var(--text-primary)]"
-              title={formatFullCurrency(balance)}
-            >
-              {formatCurrency(balance)}
-            </p>
-            <div className="mt-3 space-y-2 text-xs">
-              <p className="flex items-center justify-between">
-                <span>Income</span>
-                <span className="font-semibold text-[var(--success)]" title={formatFullCurrency(income)}>
-                  +{formatCurrency(income)}
-                </span>
-              </p>
-              <p className="flex items-center justify-between">
-                <span>Expense</span>
-                <span className="font-semibold text-[var(--danger)]" title={formatFullCurrency(expense)}>
-                  -{formatCurrency(expense)}
-                </span>
-              </p>
+            {isOpen && (
+              <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)] p-4 text-xs text-[var(--text-secondary)] dark:bg-[var(--surface-2)]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Quick summary</p>
+                <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]" title={formatFullCurrency(balance)}>
+                  {formatCurrency(balance)}
+                </p>
+                <div className="mt-3 space-y-2">
+                  <p className="flex items-center justify-between">
+                    <span>Income</span>
+                    <span className="font-semibold text-[var(--success)]" title={formatFullCurrency(income)}>
+                      +{formatCurrency(income)}
+                    </span>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span>Expense</span>
+                    <span className="font-semibold text-[var(--danger)]" title={formatFullCurrency(expense)}>
+                      -{formatCurrency(expense)}
+                    </span>
+                  </p>
+                </div>
+                <div className="mt-4 h-1.5 rounded-full bg-[var(--surface-2)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--accent)]"
+                    style={{ width: `${Math.min(100, Math.max(0, savingsRate || 0))}%` }}
+                    aria-label="Savings rate indicator"
+                  />
+                </div>
+                <p className="mt-2 text-[10px] text-[var(--text-muted)]">
+                  Savings rate <span className="font-semibold text-[var(--text-secondary)]">{Math.round(savingsRate)}%</span>
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={themeLabel}
+                title={themeLabel}
+                className={`flex items-center justify-center gap-2 rounded-full border border-[var(--border-soft)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] transition hover:border-[var(--accent)]/70 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30 dark:bg-[var(--surface-2)] ${
+                  isOpen ? "" : "h-9 w-9 px-0"
+                }`}
+              >
+                {theme === "dark" ? <Sun className="h-[14px] w-[14px]" /> : <MoonStar className="h-[14px] w-[14px]" />}
+                {isOpen && <span className="text-[11px]">{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
+              </button>
             </div>
-            <div className="mt-4 h-2 rounded-full bg-[var(--surface-2)]">
-              <div
-                className="h-full rounded-full bg-[var(--accent)]"
-                style={{ width: `${Math.min(100, Math.max(0, savingsRate || 0))}%` }}
-                aria-label="Savings rate indicator"
-              />
-            </div>
-            <p className="mt-2 text-xs text-[var(--text-muted)]">
-              Savings rate <span className="font-semibold text-[var(--text-secondary)]">{Math.round(savingsRate)}%</span>
-            </p>
           </div>
         </div>
       </motion.aside>

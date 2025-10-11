@@ -1,17 +1,25 @@
-import DashboardAreaChart from "./DashboardAreaChart";
-import DashboardCard from "./DashboardCard";
-import DashboardHistory from "./DashboardHistory";
+import DashboardSummarySection from "./components/DashboardSummarySection";
+import DashboardPerformanceChart from "./components/DashboardPerformanceChart";
+import DashboardRecentActivityCard from "./components/DashboardRecentActivityCard";
+import DashboardSpendingProfileCard from "./components/DashboardSpendingProfileCard";
+import DashboardCashFlowForecastCard from "./components/DashboardCashFlowForecastCard";
 
 const Dashboard = () => {
   return (
     <div className="space-y-8">
-      <DashboardCard />
-      <div className="grid gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
-          <DashboardAreaChart />
+      <DashboardSummarySection />
+
+      <div className="grid gap-6 xl:grid-cols-12">
+        <div className="space-y-6 xl:col-span-8">
+          <DashboardPerformanceChart />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <DashboardRecentActivityCard />
+            <DashboardSpendingProfileCard />
+          </div>
         </div>
-        <div className="xl:col-span-1">
-          <DashboardHistory />
+
+        <div className="space-y-6 xl:col-span-4">
+          <DashboardCashFlowForecastCard />
         </div>
       </div>
     </div>

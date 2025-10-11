@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
-import type { RootState } from "../../redux/store";
+import type { RootState } from "../../../redux/store";
 
 type DailyPoint = {
   date: string;
@@ -78,11 +78,7 @@ const ChartTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameTy
             <span className="h-2 w-2 rounded-full bg-sky-400" />
             Balance
           </span>
-          <span
-            className={`font-semibold ${
-              Number(balance) >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"
-            }`}
-          >
+          <span className={`font-semibold ${Number(balance) >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
             {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
               Number(balance) || 0,
             )}
@@ -93,7 +89,7 @@ const ChartTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameTy
   );
 };
 
-const DashboardAreaChart = () => {
+const DashboardPerformanceChart = () => {
   const transactions = useSelector((state: RootState) => state.transaction.items);
   const [timeframe, setTimeframe] = useState<"daily" | "monthly">("daily");
 
@@ -128,140 +124,133 @@ const DashboardAreaChart = () => {
 
     let runningBalance = 0;
 
-    return sorted.map(([date, value]) => {
-      runningBalance += value.income - value.expense;
-      const savingsRate =
-        value.income === 0 ? 0 : Math.max(0, ((value.income - value.expense) / value.income) * 100);
+    return sorted.map(([date, values]) => {
+      runningBalance += values.income - values.expense;
+      const total = values.income === 0 ? 0 : ((values.income - values.expense) / values.income) * 100;
 
       return {
         date,
-        income: Number(value.income.toFixed(2)),
-        expense: Number(value.expense.toFixed(2)),
-        balance: Number(runningBalance.toFixed(2)),
-        savingsRate: Number(savingsRate.toFixed(1)),
+        income: values.income,
+        expense: values.expense,
+        balance: runningBalance,
+        savingsRate: Number.isFinite(total) ? Math.max(0, total) : 0,
       };
     });
   }, [transactions]);
 
-  const monthlyData = useMemo<MonthlyPoint[]>(() => {
+  const aggregatedMonthlyData = useMemo<MonthlyPoint[]>(() => {
     if (augmentedDailyData.length === 0) {
       return [];
     }
 
-    const monthMap = new Map<string, { income: number; expense: number }>();
+    const map = new Map<string, { income: number; expense: number; balance: number }>();
 
-    augmentedDailyData.forEach((item) => {
-      const [year, month] = item.date.split("-");
+    augmentedDailyData.forEach((point) => {
+      const [year, month] = point.date.split("-");
       const key = `${year}-${month}`;
-      const entry = monthMap.get(key) ?? { income: 0, expense: 0 };
-      entry.income += item.income;
-      entry.expense += item.expense;
-      monthMap.set(key, entry);
+      const entry = map.get(key) ?? { income: 0, expense: 0, balance: 0 };
+
+      entry.income += point.income;
+      entry.expense += point.expense;
+      entry.balance = point.balance;
+
+      map.set(key, entry);
     });
 
-    const sorted = Array.from(monthMap.entries()).sort(
-      (a, b) => new Date(`${a[0]}-01`).getTime() - new Date(`${b[0]}-01`).getTime(),
-    );
+    return Array.from(map.entries())
+      .sort((a, b) => new Date(`${a[0]}-01`).getTime() - new Date(`${b[0]}-01`).getTime())
+      .map(([month, values]) => {
+        const savingsRate = values.income === 0 ? 0 : ((values.income - values.expense) / values.income) * 100;
 
-    let runningBalance = 0;
-
-    return sorted.map(([key, value]) => {
-      runningBalance += value.income - value.expense;
-      const savingsRate =
-        value.income === 0 ? 0 : Math.max(0, ((value.income - value.expense) / value.income) * 100);
-
-      const [year, month] = key.split("-").map(Number);
-      const label = new Date(year, (month ?? 1) - 1, 1).toLocaleString("en-US", {
-        month: "short",
-        year: "numeric",
+        return {
+          month,
+          income: values.income,
+          expense: values.expense,
+          balance: values.balance,
+          savingsRate: Math.max(0, savingsRate),
+        };
       });
-
-      return {
-        month: label,
-        income: Number(value.income.toFixed(2)),
-        expense: Number(value.expense.toFixed(2)),
-        balance: Number(runningBalance.toFixed(2)),
-        savingsRate: Number(savingsRate.toFixed(1)),
-      };
-    });
   }, [augmentedDailyData]);
 
-  const chartData = timeframe === "daily" ? augmentedDailyData : monthlyData;
+  const chartData = timeframe === "daily" ? augmentedDailyData : aggregatedMonthlyData;
   const xKey = timeframe === "daily" ? "date" : "month";
-
   const summary = useMemo<ChartSummary>(() => {
     if (chartData.length === 0) {
-      return { income: 0, expense: 0, balance: 0, savingsRate: 0 };
+      return {
+        income: 0,
+        expense: 0,
+        balance: 0,
+        savingsRate: 0,
+      };
     }
 
-    const totals = chartData.reduce(
-      (acc, item) => {
-        acc.income += item.income;
-        acc.expense += item.expense;
-        acc.balance = item.balance;
-        return acc;
+    return chartData.reduce(
+      (acc, point) => ({
+        income: acc.income + point.income,
+        expense: acc.expense + point.expense,
+        balance: point.balance,
+        savingsRate: acc.savingsRate + point.savingsRate,
+      }),
+      {
+        income: 0,
+        expense: 0,
+        balance: 0,
+        savingsRate: 0,
       },
-      { income: 0, expense: 0, balance: 0 },
     );
-
-    const savingsRate =
-      totals.income === 0 ? 0 : Math.max(0, ((totals.income - totals.expense) / totals.income) * 100);
-
-    return {
-      income: totals.income,
-      expense: totals.expense,
-      balance: totals.balance,
-      savingsRate,
-    };
   }, [chartData]);
 
-  const brushStartIndex = Math.max(0, chartData.length - 8);
+  const formatPeriodLabel = (label: string) => {
+    if (timeframe === "daily") {
+      const parsed = new Date(label);
+      if (Number.isNaN(parsed.getTime())) {
+        return label;
+      }
+      return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+
+    const [year, month] = label.split("-");
+    return new Date(Number(year), Number(month) - 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  };
+
+  const brushStartIndex = chartData.length > 16 ? chartData.length - 16 : 0;
   const brushEndIndex = chartData.length - 1;
 
   return (
     <section className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-[var(--text-muted)]">Cashflow insights</p>
-          <h2 className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">Income vs Expense Trend</h2>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">
-            Monitor your cashflow performance and savings health over time.
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Performance</p>
+          <h2 className="mt-1 text-lg font-semibold text-[var(--text-primary)]">Income vs expense trend</h2>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
+            Navigate your cash flow trajectory and savings momentum.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] p-1 dark:bg-[var(--surface-2)]">
-            {(["daily", "monthly"] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setTimeframe(option)}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] transition ${
-                  timeframe === option
-                    ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-            <span className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Income {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(summary.income)}
-            </span>
-            <span className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] px-3 py-1 dark:bg-[var(--surface-2)]">
-              <span className="h-2 w-2 rounded-full bg-rose-400" />
-              Expense {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(summary.expense)}
-            </span>
-          </div>
+        <div className="rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] p-1 text-xs text-[var(--text-secondary)] dark:bg-[var(--surface-2)]">
+          <button
+            type="button"
+            onClick={() => setTimeframe("daily")}
+            className={`rounded-full px-3 py-1 font-medium transition ${
+              timeframe === "daily" ? "bg-[var(--accent)] text-white shadow-sm" : ""
+            }`}
+          >
+            Daily
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeframe("monthly")}
+            className={`rounded-full px-3 py-1 font-medium transition ${
+              timeframe === "monthly" ? "bg-[var(--accent)] text-white shadow-sm" : ""
+            }`}
+          >
+            Monthly
+          </button>
         </div>
-      </div>
+      </header>
 
       <div className="mt-6 h-[360px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData}>
+          <AreaChart data={chartData} margin={{ top: 0, right: 12, left: -12, bottom: 0 }}>
             <defs>
               <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#16a34a" stopOpacity={0.6} />
@@ -284,6 +273,7 @@ const DashboardAreaChart = () => {
               tick={{ fill: "var(--text-muted)", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
+              tickFormatter={formatPeriodLabel}
             />
             <YAxis
               tickFormatter={(value) =>
@@ -296,8 +286,9 @@ const DashboardAreaChart = () => {
             <Tooltip content={<ChartTooltip />} cursor={{ stroke: "rgba(148, 163, 184, 0.3)", strokeWidth: 1 }} />
             <Legend
               verticalAlign="top"
-              align="right"
+              align="left"
               iconType="circle"
+              iconSize={10}
               wrapperStyle={{ paddingBottom: 12, paddingTop: 12 }}
             />
             <Area
@@ -383,4 +374,4 @@ const DashboardAreaChart = () => {
   );
 };
 
-export default DashboardAreaChart;
+export default DashboardPerformanceChart;

@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { ArrowDownRight, ArrowUpRight, Gauge, PiggyBank, TrendingUp } from "lucide-react";
+import { type ReactNode, useMemo } from "react";
+import { ArrowUpRight, Gauge, PiggyBank, TrendingUp } from "lucide-react";
 import { useSelector } from "react-redux";
-import type { RootState } from "../../redux/store";
-import IconWrapper from "../../components/Icon/IconWrapper";
+import type { RootState } from "../../../redux/store";
+import IconWrapper from "../../../components/Icon/IconWrapper";
 
 const THIRTY_DAYS_MS = 1000 * 60 * 60 * 24 * 30;
 
@@ -30,13 +30,13 @@ type SmallCard = {
   fractionDigits?: number;
   delta: number;
   deltaLabel: string;
-  icon: JSX.Element;
+  icon: ReactNode;
   tone: "positive" | "negative" | "info" | "neutral";
   isPercentage?: boolean;
   subLabel: string;
 };
 
-const DashboardCard = () => {
+const DashboardSummarySection = () => {
   const transactions = useSelector((state: RootState) => state.transaction.items);
 
   const summary = useMemo<Summary>(() => {
@@ -127,11 +127,9 @@ const DashboardCard = () => {
       dailyBurn === 0 ? Number.POSITIVE_INFINITY : Math.max(0, Math.floor(balance / dailyBurn));
     const netChange = accumulator.currentWindowNet - accumulator.previousWindowNet;
     const netChangePercent =
-      accumulator.previousWindowNet === 0
-        ? accumulator.currentWindowNet === 0
-          ? 0
-          : 100
-        : (netChange / Math.abs(accumulator.previousWindowNet)) * 100;
+      accumulator.previousWindowNet === 0 ? 0 : (netChange / Math.abs(accumulator.previousWindowNet)) * 100;
+    const incomeDelta = accumulator.currentIncome - accumulator.previousIncome;
+    const expenseDelta = accumulator.currentExpense - accumulator.previousExpense;
 
     return {
       balance,
@@ -140,9 +138,9 @@ const DashboardCard = () => {
       averageTransaction,
       savingsRate,
       expenseToIncomeRatio,
-      runwayDays,
-      incomeDelta: accumulator.currentIncome - accumulator.previousIncome,
-      expenseDelta: accumulator.currentExpense - accumulator.previousExpense,
+      runwayDays: Number.isFinite(runwayDays) ? runwayDays : 0,
+      incomeDelta,
+      expenseDelta,
       netChange,
       netChangePercent,
       recentIncome: accumulator.currentIncome,
@@ -169,73 +167,59 @@ const DashboardCard = () => {
       maximumFractionDigits,
     }).format(value);
 
-  const formatDelta = (value: number) => {
-    const prefix = value >= 0 ? "+" : "-";
-    return `${prefix}${formatCurrency(Math.abs(value))}`;
-  };
-
-  const compactCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(value);
-
-  const runwayLabel =
-    Number.isFinite(summary.runwayDays) && summary.runwayDays !== Number.POSITIVE_INFINITY
-      ? `Runway ~${summary.runwayDays} days`
-      : "No expenses recorded in the last 30 days";
+  const formatDelta = (value: number) => `${value >= 0 ? "+" : "-"}${formatCurrency(Math.abs(value), 0)}`;
 
   const smallCards: SmallCard[] = [
     {
-      id: "income",
-      label: "Cash In (30d)",
-      value: formatCurrency(summary.recentIncome),
-      rawValue: summary.recentIncome,
-      fractionDigits: 0,
-      delta: summary.incomeDelta,
-      deltaLabel: formatDelta(summary.incomeDelta),
-      icon: <ArrowDownRight className="h-5 w-5" />,
-      tone: "positive",
-      subLabel: `${transactions.filter((t) => t.type === "income").length} income records`,
-    },
-    {
-      id: "expense",
-      label: "Cash Out (30d)",
-      value: formatCurrency(summary.recentExpense),
-      rawValue: summary.recentExpense,
-      fractionDigits: 0,
-      delta: summary.expenseDelta,
-      deltaLabel: formatDelta(summary.expenseDelta),
-      icon: <ArrowUpRight className="h-5 w-5" />,
-      tone: "negative",
-      subLabel: `${transactions.filter((t) => t.type === "expense").length} expense records`,
-    },
-    {
-      id: "average",
-      label: "Average Ticket",
-      value: formatCurrency(summary.averageTransaction, summary.averageTransaction > 100 ? 0 : 2),
+      id: "avg-transaction",
+      label: "Average transaction",
+      value: formatCurrency(summary.averageTransaction, 0),
       rawValue: summary.averageTransaction,
-      fractionDigits: summary.averageTransaction > 100 ? 0 : 2,
-      delta: summary.netChange,
-      deltaLabel: `${summary.netChange >= 0 ? "+" : "-"}${compactCurrency(Math.abs(summary.netChange))} net`,
+      delta: summary.netChangePercent,
+      deltaLabel: `${summary.netChangePercent >= 0 ? "+" : "-"}${Math.abs(summary.netChangePercent).toFixed(1)}% vs prev`,
       icon: <TrendingUp className="h-5 w-5" />,
       tone: "info",
-      subLabel: "Net change vs last month",
+      subLabel: "Average value across all records",
+    },
+    {
+      id: "runway",
+      label: "Runway estimate",
+      value: Number.isFinite(summary.runwayDays) ? `${summary.runwayDays} days` : "∞",
+      rawValue: summary.runwayDays,
+      delta: summary.netChange,
+      deltaLabel: `${summary.netChange >= 0 ? "+" : "-"}${formatCurrency(Math.abs(summary.netChange), 0)} vs prev`,
+      icon: <Gauge className="h-5 w-5" />,
+      tone: summary.runwayDays >= 60 ? "positive" : summary.runwayDays >= 30 ? "info" : "negative",
+      subLabel: "Projected days until balance hits zero",
     },
     {
       id: "savings",
-      label: "Savings Health",
-      value: `${summary.savingsRate.toFixed(0)}%`,
+      label: "Savings rate",
+      value: `${summary.savingsRate.toFixed(1)}%`,
       rawValue: summary.savingsRate,
       fractionDigits: 1,
-      delta: summary.netChangePercent,
-      deltaLabel: `${summary.netChangePercent >= 0 ? "+" : "-"}${Math.abs(summary.netChangePercent).toFixed(1)}%`,
-      icon: <Gauge className="h-5 w-5" />,
-      tone: "info",
+      delta: summary.recentIncome - summary.recentExpense,
+      deltaLabel: `${summary.recentIncome - summary.recentExpense >= 0 ? "+" : "-"}${formatCurrency(
+        Math.abs(summary.recentIncome - summary.recentExpense),
+        0,
+      )} last 30d`,
+      icon: <PiggyBank className="h-5 w-5" />,
+      tone: summary.savingsRate >= 20 ? "positive" : summary.savingsRate >= 10 ? "info" : "negative",
       isPercentage: true,
-      subLabel: runwayLabel,
+      subLabel: "Income retained after expenses",
+    },
+    {
+      id: "expense-ratio",
+      label: "Expense to income",
+      value: `${summary.expenseToIncomeRatio.toFixed(1)}%`,
+      rawValue: summary.expenseToIncomeRatio,
+      fractionDigits: 1,
+      delta: summary.expenseDelta,
+      deltaLabel: `${summary.expenseDelta >= 0 ? "+" : "-"}${formatCurrency(Math.abs(summary.expenseDelta), 0)} vs prev`,
+      icon: <ArrowUpRight className="h-5 w-5" />,
+      tone: summary.expenseToIncomeRatio <= 70 ? "positive" : summary.expenseToIncomeRatio <= 90 ? "info" : "negative",
+      isPercentage: true,
+      subLabel: "Share of income used for spending",
     },
   ];
 
@@ -263,14 +247,14 @@ const DashboardCard = () => {
       <article className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-8 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)] lg:col-span-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Total Balance</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Total balance</p>
             <p
               className="mt-3 text-4xl font-semibold text-[var(--text-primary)]"
               title={formatFullCurrency(summary.balance)}
             >
               {formatCurrency(summary.balance)}
             </p>
-            <p className="mt-3 text-sm text-[var(--text-muted)]">
+            <p className="mt-3 text-xs text-[var(--text-muted)]">
               Balance change{" "}
               <span
                 className={`font-semibold ${summary.netChange >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
@@ -368,4 +352,4 @@ const DashboardCard = () => {
   );
 };
 
-export default DashboardCard;
+export default DashboardSummarySection;

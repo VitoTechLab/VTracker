@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ArrowLeftRight, PlusCircle } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeftRight, ChevronDown, PlusCircle } from "lucide-react";
 import { useAppSelector } from "../../hook/redux_hook";
 import TableTransaction from "../../components/Table/TableTransaction";
 import Modal from "../../components/Modal/Modal";
@@ -19,6 +19,8 @@ const Transaction = () => {
   const { openModal, formType, editId, handleOpenModal, handleCloseModal } = useModal();
   const transactions = useAppSelector((state) => state.transaction.items);
   const [activeFilter, setActiveFilter] = useState<TransactionFilter>("all");
+  const [isMobileActionMenuOpen, setIsMobileActionMenuOpen] = useState(false);
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
 
   const summary = useMemo(() => {
     return transactions.reduce(
@@ -80,8 +82,50 @@ const Transaction = () => {
     handleOpenModal(transaction.type as "income" | "expense", transaction.id);
   };
 
+  useEffect(() => {
+    if (!isMobileActionMenuOpen) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
+        setIsMobileActionMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileActionMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isMobileActionMenuOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 640) {
+        setIsMobileActionMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleMobileCreateTransaction = (type: "income" | "expense") => {
+    handleCreateTransaction(type);
+    setIsMobileActionMenuOpen(false);
+  };
+
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-24 lg:pb-6 [padding-bottom:calc(6rem+env(safe-area-inset-bottom))] lg:[padding-bottom:1.5rem]">
       <header className="rounded-3xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-6 shadow-sm transition-colors duration-300 dark:bg-[var(--surface-card)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -107,14 +151,14 @@ const Transaction = () => {
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-[var(--surface-1)] p-1 dark:bg-[var(--surface-2)]">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="grid w-full grid-cols-3 gap-1 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)] p-1 dark:bg-[var(--surface-2)] sm:flex sm:w-auto sm:items-center sm:gap-1.5">
               {filterOptions.map((option) => (
                 <button
                   key={option.id}
                   type="button"
                   onClick={() => setActiveFilter(option.id)}
-                  className={`flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+                  className={`flex items-center justify-center gap-2 rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] transition sm:px-4 sm:py-1 sm:text-xs sm:tracking-[0.18em] ${
                     activeFilter === option.id
                       ? "bg-[var(--accent)] text-white shadow-sm"
                       : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -126,7 +170,39 @@ const Transaction = () => {
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="relative w-full sm:hidden" ref={actionMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsMobileActionMenuOpen((previous) => !previous)}
+                className="flex w-full items-center justify-between gap-2 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-1)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-secondary)] transition hover:border-[var(--accent)]/50 hover:text-[var(--accent)] dark:bg-[var(--surface-2)]"
+                aria-expanded={isMobileActionMenuOpen}
+              >
+                <span>New transaction</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isMobileActionMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+              {isMobileActionMenuOpen && (
+                <div className="absolute inset-x-0 z-10 mt-2 space-y-2 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-0)] p-2 shadow-lg dark:bg-[var(--surface-card)]">
+                  <button
+                    type="button"
+                    onClick={() => handleMobileCreateTransaction("income")}
+                    className="flex w-full items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600 transition hover:border-emerald-500/60 hover:bg-emerald-500/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    Add income
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMobileCreateTransaction("expense")}
+                    className="flex w-full items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:border-rose-500/60 hover:bg-rose-500/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/35"
+                  >
+                    <ArrowLeftRight className="h-4 w-4" />
+                    Add expense
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="hidden items-center gap-2 sm:flex">
               <button
                 type="button"
                 onClick={() => handleCreateTransaction("income")}
