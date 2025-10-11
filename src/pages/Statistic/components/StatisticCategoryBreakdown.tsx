@@ -29,7 +29,7 @@ const StatisticCategoryBreakdown = ({ income, expense }: StatisticCategoryBreakd
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className="text-xl" aria-hidden="true">
-                  {category.icon}
+                  {category.icon || "-"}
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-[var(--text-primary)]">{category.name}</p>
@@ -72,7 +72,7 @@ const StatisticCategoryBreakdown = ({ income, expense }: StatisticCategoryBreakd
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className="text-xl" aria-hidden="true">
-                  {category.icon}
+                  {category.icon || "-"}
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-[var(--text-primary)]">{category.name}</p>

@@ -70,7 +70,7 @@ const TableCategory = ({ filter, onEdit }: TableCategoryProps) => {
             {filter === "income" ? "Income categories" : "Expense categories"}
           </h2>
           <p className="mt-1 text-xs text-[var(--text-muted)]">
-            Organise your ledger with intuitive, emoji-first categories.
+            Organise your ledger with expressive emoji categories.
           </p>
         </div>
 
@@ -110,7 +110,9 @@ const TableCategory = ({ filter, onEdit }: TableCategoryProps) => {
             className="flex items-center justify-between gap-3 rounded-3xl border border-[var(--surface-2)] bg-[var(--surface-1)]/80 px-5 py-4 text-sm transition hover:border-[var(--accent)]/40 hover:bg-[var(--surface-1)]/95 dark:bg-[var(--surface-2)]/80"
           >
             <div className="flex items-center gap-4">
-              <span className="text-2xl">{category.icon}</span>
+              <span className="text-2xl" aria-hidden="true">
+                {category.icon || "-"}
+              </span>
               <div>
                 <p className="text-sm font-semibold text-[var(--text-primary)]">{category.name}</p>
                 <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
@@ -145,4 +147,3 @@ const TableCategory = ({ filter, onEdit }: TableCategoryProps) => {
 };
 
 export default TableCategory;
-

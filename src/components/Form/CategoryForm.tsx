@@ -1,17 +1,16 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useCategoryCrud } from "../../hook/useCategoryCrud";
 import { useAppDispatch } from "../../hook/redux_hook";
 import { addCategory, editCategory } from "../../redux/category_slice";
+import { emojiOptions } from "../../constants/emojiOptions";
 
 interface CategoryFormProps {
   type: "income" | "expense";
   editId?: number | null;
   onClosed: () => void;
 }
-
-const iconSuggestions = ["💰", "🛒", "🍽️", "🚌", "🏡", "🎉", "🎓", "✈️", "🩺", "📈", "🚗", "⚡", "🎁", "🐾"];
 
 const CategoryForm = ({ type, onClosed, editId }: CategoryFormProps) => {
   const dispatch = useAppDispatch();
@@ -40,13 +39,6 @@ const CategoryForm = ({ type, onClosed, editId }: CategoryFormProps) => {
       console.error("Failed to load category", cause);
     }
   }, [editId, getByIdCategory]);
-
-  const availableIcons = useMemo(() => {
-    if (formData.icon && !iconSuggestions.includes(formData.icon)) {
-      return [formData.icon, ...iconSuggestions];
-    }
-    return iconSuggestions;
-  }, [formData.icon]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -174,30 +166,42 @@ const CategoryForm = ({ type, onClosed, editId }: CategoryFormProps) => {
           name="icon"
           value={formData.icon}
           onChange={handleChange}
-          placeholder="Pick an emoji"
+          placeholder="Type an emoji (e.g. 💰, 🚗) or paste your own"
           className={`w-full rounded-2xl border border-[var(--surface-2)] bg-[var(--surface-1)]/80 px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]/40 focus:ring-2 focus:ring-[var(--accent)]/40 dark:bg-[var(--surface-2)] ${accent}`}
           aria-required="true"
         />
         <p className="text-xs text-[var(--text-muted)]">
-          Use short emoji to keep your tables expressive and scannable.
+          Paste your favourite emoji or tap one below so each category stays visual and scannable.
         </p>
 
-        <div className="grid grid-cols-7 gap-2 text-lg">
-          {availableIcons.map((icon) => (
-            <button
-              key={icon}
-              type="button"
-              onClick={() => setFormData((prev) => ({ ...prev, icon }))}
-              className={`flex h-10 items-center justify-center rounded-2xl border text-base transition ${
-                formData.icon === icon
-                  ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
-                  : "border-[var(--surface-2)] bg-[var(--surface-1)]/70 text-[var(--text-secondary)] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] dark:bg-[var(--surface-2)]"
-              }`}
-              aria-label={`Use icon ${icon}`}
-            >
-              {icon}
-            </button>
-          ))}
+        <div className="max-h-52 overflow-y-auto rounded-2xl border border-[var(--surface-2)] bg-[var(--surface-1)]/60 p-3 dark:bg-[var(--surface-2)]/70">
+          <div className="grid grid-cols-6 gap-2 text-lg sm:grid-cols-7">
+            {emojiOptions.map((option) => {
+              const isActive = formData.icon === option.symbol;
+
+              return (
+                <button
+                  key={`${option.symbol}-${option.label}`}
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      icon: option.symbol,
+                    }))
+                  }
+                  className={`flex h-10 items-center justify-center rounded-2xl border text-base transition ${
+                    isActive
+                      ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
+                      : "border-transparent bg-[var(--surface-0)]/80 text-[var(--text-secondary)] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] dark:bg-[var(--surface-card)]/60"
+                  }`}
+                  aria-label={`Use icon ${option.symbol}`}
+                  title={option.label}
+                >
+                  <span aria-hidden="true">{option.symbol}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -221,4 +225,3 @@ const CategoryForm = ({ type, onClosed, editId }: CategoryFormProps) => {
 };
 
 export default CategoryForm;
-
