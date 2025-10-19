@@ -148,6 +148,3 @@ Contributions are welcome. Suggested workflow:
 
 Licensed under the MIT `License`. See LICENSE
  for details.
-
-
-
