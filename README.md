@@ -126,13 +126,6 @@ Contributions are welcome. Suggested workflow:
 
 ---
 
-## License
-
-Licensed under the MIT `License`. See LICENSE
- for details.
-
----
-
 ## Roadmap
 
 - Add export/import (CSV/JSON)
@@ -148,4 +141,13 @@ Licensed under the MIT `License`. See LICENSE
 
 - Q: Can I backup or export my data?
    - A: Export/import isn't implemented by default; it's on the roadmap. You can manually export IndexedDB or add a feature PR.
+
+---
+
+## License
+
+Licensed under the MIT `License`. See LICENSE
+ for details.
+
+
 
