@@ -5,6 +5,14 @@ VTracker is a modern, local-first personal finance dashboard that helps you unde
 
 ---
 
+## Preview
+
+![VTracker – Dashboard Light Mode](./src/assets/screenshots/dashboard-light.png)
+![VTracker – Dashboard Dark Mode](./src/assets/screenshots/dashboard-dark.png)
+
+---
+
+
 ## Table of Contents
 - [Features](#features)
 - [Tech Stack](#tech-stack)
