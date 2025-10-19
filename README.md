@@ -1,69 +1,151 @@
-# VTracker - Personal Finance Dashboard
 
-VTracker is a modern personal finance dashboard that helps you understand where your money goes. Track income and expenses, review category insights, and monitor savings momentum in a single, responsive interface.
+# VTracker — Personal Finance Dashboard
+
+VTracker is a modern, local-first personal finance dashboard that helps you understand where your money goes. Add and categorize transactions, view trends and KPIs, and explore visual analytics — all in the browser (no backend required).
+
+---
+
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Available Scripts](#available-scripts)
+- [Data & Privacy](#data--privacy)
+- [Development Tips](#development-tips)
+- [Contributing](#contributing)
+- [License](#license)
+- [Roadmap](#roadmap)
+- [FAQ](#faq)
+
+---
 
 ## Features
 
-- Cash-flow performance chart comparing income, expense, and balance trends.
-- Category insights with contribution percentages for income and expense groups.
-- Momentum analytics covering net cashflow, cumulative balance, and savings rate.
-- Quick summary KPIs for balances, totals, and savings performance.
-- Offline-first storage powered by `sql.js`, so data stays on your device.
-- Light and dark theme toggle with adaptive styling.
+- Cash-flow performance chart (income, expense, balance)
+- Category breakdown and contribution percentages
+- Momentum analytics (net cashflow, cumulative balance)
+- Quick KPIs: balance, monthly totals, recent activity
+- Offline-first persistence using `sql.js` + IndexedDB
+- Theme toggle (light / dark)
+- CRUD for transactions and categories (emoji support)
+- Responsive UI with smooth micro-interactions
+
+---
 
 ## Tech Stack
 
 - React 19 + TypeScript
-- Vite build tooling
+- Vite for tooling (dev & build)
 - Redux Toolkit for state management
-- Tailwind CSS utilities (via `@tailwindcss/vite`)
-- Recharts for data visualization
-- sql.js for client-side persistence
+- Tailwind CSS (via `@tailwindcss/vite`)
+- Recharts for charts
+- sql.js + IndexedDB for client-side persistence
+- Framer Motion for animations
 
-## Getting Started
-
-1. Install dependencies
-   ```bash
-   npm install
-   ```
-
-2. Start the development server
-   ```bash
-   npm run dev
-   ```
-   Open the URL shown in the terminal (defaults to `http://localhost:5173`).
-
-3. Create a production build
-   ```bash
-   npm run build
-   npm run preview
-   ```
+---
 
 ## Project Structure
 
-```
-.
-|-- index.html                 # App entry with SEO/meta tags
-|-- public/                    # Static assets (logos, OG images, wasm)
-|-- src/
-|   |-- components/            # Reusable UI building blocks
-|   |-- pages/                 # Routed page layouts (Dashboard, Transactions, etc.)
-|   |-- redux/                 # Redux slices and store
-|   |-- database/              # sql.js setup and table creation helpers
-|   `-- hook/                  # Custom React hooks
-`-- vite.config.ts             # Vite configuration
+Top-level notable files & folders:
+
+- `index.html` — app entry
+- `public/` — static assets (including wasm for sql.js)
+- `src/`
+   - `assets/` — images, styles
+   - `components/` — shared UI components
+   - `constants/` — constant values (e.g., emoji options)
+   - `context/` — React context providers (e.g., ThemeProvider)
+   - `database/` — sql.js / IndexedDB helpers and queries
+   - `hook/` — custom hooks (CRUD, modal, persistence helpers)
+   - `pages/` — app pages (Dashboard, Transaction, Category, Statistic)
+   - `redux/` — slices and store configuration
+   - `utils/` — utility helpers
+   - `App.tsx`, `main.tsx`, `vite-env.d.ts`
+
+This structure follows the project layout found in the repository.
+
+---
+
+## Getting Started
+
+Prerequisites: Node.js (recommended >=18) and npm.
+
+1. Clone and install
+
+```bash
+git clone https://github.com/VitoTechLab/VTracker.git
+cd VTracker
+npm install
 ```
 
-## Environment Variables
+2. Start development server
 
-Duplicate `.env.example` as `.env` (if provided) or define environment variables directly. The app runs with default values for local development.
+```bash
+npm run dev
+```
+
+Open the URL printed by Vite (default: `http://localhost:5173`).
+
+---
+
+## Available Scripts
+
+- `npm run dev` — start the Vite dev server (HMR)
+- `npm run build` — compile TypeScript (`tsc -b`) then build with Vite
+- `npm run preview` — preview the production build from `dist`
+- `npm run lint` — run ESLint
+- `npm run deploy` — publish `dist` to GitHub Pages (uses `gh-pages`)
+
+---
+
+## Data & Privacy
+
+- All user data is stored locally in the browser (sql.js persisted to IndexedDB).
+- Clearing site data / browser storage will remove app data.
+- Recommended to use a modern browser (Chrome, Edge, Firefox) for best compatibility.
+
+---
+
+## Development Tips
+
+- Use Node.js version compatible with the project's `devDependencies` (see `package.json`).
+- Run `npm run lint` before committing.
+- Use Vite HMR for quick UI iteration.
+
+---
 
 ## Contributing
 
-1. Fork the repository and create a feature branch.
-2. Make your changes and run `npm run lint`.
-3. Open a pull request that describes the update and includes screenshots when relevant.
+Contributions are welcome. Suggested workflow:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Make changes, run linters
+4. Push and open a Pull Request with a clear description and screenshots if applicable
+
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Licensed under the MIT `License`. See LICENSE
+ for details.
+
+---
+
+## Roadmap
+
+- Add export/import (CSV/JSON)
+- Enable cloud sync (opt-in)
+- Add tests and CI
+
+---
+
+## FAQ
+
+- Q: Where is my data stored?
+  - A: Locally in the browser via sql.js and IndexedDB.
+
+- Q: Can I backup or export my data?
+   - A: Export/import isn't implemented by default; it's on the roadmap. You can manually export IndexedDB or add a feature PR.
+
