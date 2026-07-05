@@ -1,6 +1,8 @@
 import initSqlJs from 'sql.js';
 import { createCategoryTable, createTransactionTable } from './createTable';
 
+const SQL_WASM_BASE_URL = `${import.meta.env.BASE_URL}wasm/`;
+
 type SqliteStoreData = {
   id: number;
   data: Uint8Array;
@@ -22,7 +24,7 @@ export const openIndexedDB = (): Promise<IDBDatabase> => {
 export const initDatabase = async () => {
   try {
     const SQL = await initSqlJs({
-      locateFile: file => import.meta.env.VITE_BASE_URL + file
+      locateFile: file => `${SQL_WASM_BASE_URL}${file}`
     });
 
     const IDB = await openIndexedDB();
